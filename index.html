@@ -136,20 +136,27 @@
     const display = document.getElementById('display');
     const historyEl = document.getElementById('history');
 
-    // 햅틱 피드백 함수
+    // 햅틱 피드백 함수 (개선된 버전)
     function vibrate(duration = 10) {
-      if ('vibrate' in navigator) {
-        navigator.vibrate(duration);
+      try {
+        if ('vibrate' in navigator) {
+          navigator.vibrate(duration);
+        } else if (window.navigator && window.navigator.vibrate) {
+          window.navigator.vibrate(duration);
+        }
+      } catch (e) {
+        console.log('진동 미지원:', e);
       }
     }
 
-    // 모든 버튼에 진동 피드백 추가
+    // 모든 버튼에 직접 진동 피드백 추가 (click 이벤트 사용)
     document.addEventListener('DOMContentLoaded', () => {
       const buttons = document.querySelectorAll('.btn');
       buttons.forEach(button => {
-        button.addEventListener('touchstart', (e) => {
-          vibrate(10); // 짧은 진동 (10ms)
-        }, { passive: true });
+        // click 이벤트에 진동 추가 (touchstart보다 안정적)
+        button.addEventListener('click', (e) => {
+          vibrate(30); // 진동 시간 증가 (30ms)
+        });
       });
     });
 
@@ -184,9 +191,8 @@
       }
     });
 
-    // 계산기 로직 (진동 피드백 추가)
+    // 계산기 로직 (진동 피드백 제거 - 중복 방지)
     function appendToDisplay(value) {
-      vibrate(10);
       if (display.innerText === '0' && value !== '.') {
         display.innerText = '';
       }
@@ -196,18 +202,15 @@
     }
 
     function clearAll() {
-      vibrate(15); // 조금 더 긴 진동
       display.innerText = '0';
       historyEl.innerText = '';
     }
 
     function backspace() {
-      vibrate(10);
       display.innerText = display.innerText.slice(0, -1) || '0';
     }
 
     function calculate() {
-      vibrate(20); // = 버튼은 더 강한 진동
       let expr = display.innerText
         .replace(/×/g, '*')
         .replace(/−/g, '-')
@@ -227,7 +230,6 @@
         display.innerText = Number.isInteger(result) ? result : parseFloat(result.toFixed(12));
       } catch (e) {
         display.innerText = 'Error';
-        vibrate([50, 100, 50]); // 에러 시 패턴 진동 (진동-멈춤-진동)
         setTimeout(() => {
           display.innerText = '0';
           historyEl.innerText = '';
@@ -237,7 +239,6 @@
 
     document.addEventListener('keydown', (e) => {
       e.preventDefault();
-      vibrate(8); // 키보드 입력 시 가벼운 진동
       const key = e.key;
       if (/[0-9]/.test(key)) appendToDisplay(key);
       else if (key === '.') appendToDisplay('.');
