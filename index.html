@@ -123,11 +123,12 @@
         <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('2')">2</button>
         <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('3')">3</button>
         <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('-')">−</button>
-        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('e')">e</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('+')">+</button>
 
         <button class="btn py-3 text-sm bg-calc-btn-num text-white col-span-2" onclick="appendToDisplay('0')">0</button>
         <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('.')">.</button>
-        <button class="btn py-3 text-sm bg-calc-btn-equal text-white col-span-2" onclick="calculate()">=</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('e')">e</button>
+        <button class="btn py-3 text-sm bg-calc-btn-equal text-white" onclick="calculate()">=</button>
       </div>
     </div>
   </div>
@@ -136,28 +137,43 @@
     const display = document.getElementById('display');
     const historyEl = document.getElementById('history');
 
-    // 햅틱 피드백 함수 (개선된 버전)
-    function vibrate(duration = 10) {
+    // 햅틱 피드백 함수 (갤럭시 최적화)
+    function vibrate(duration = 50) {
       try {
-        if ('vibrate' in navigator) {
+        // 여러 방법으로 시도
+        if (navigator.vibrate) {
           navigator.vibrate(duration);
-        } else if (window.navigator && window.navigator.vibrate) {
+        } else if (navigator.webkitVibrate) {
+          navigator.webkitVibrate(duration);
+        } else if (navigator.mozVibrate) {
+          navigator.mozVibrate(duration);
+        } else if (window.navigator.vibrate) {
           window.navigator.vibrate(duration);
         }
       } catch (e) {
-        console.log('진동 미지원:', e);
+        console.log('진동 실패:', e);
       }
     }
 
-    // 모든 버튼에 직접 진동 피드백 추가 (click 이벤트 사용)
+    // 모든 버튼에 직접 진동 피드백 추가
     document.addEventListener('DOMContentLoaded', () => {
       const buttons = document.querySelectorAll('.btn');
       buttons.forEach(button => {
-        // click 이벤트에 진동 추가 (touchstart보다 안정적)
-        button.addEventListener('click', (e) => {
-          vibrate(30); // 진동 시간 증가 (30ms)
+        // touchstart와 click 둘 다 사용
+        button.addEventListener('touchstart', (e) => {
+          vibrate(50); // 50ms로 증가
+        }, { passive: true });
+        
+        // 마우스 클릭도 지원 (PC 테스트용)
+        button.addEventListener('mousedown', (e) => {
+          vibrate(50);
         });
       });
+      
+      // 테스트: 페이지 로드 시 진동
+      setTimeout(() => {
+        vibrate(200); // 로딩 완료 시 긴 진동
+      }, 1000);
     });
 
     // Service Worker 등록
