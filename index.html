@@ -137,16 +137,6 @@
     const display = document.getElementById('display');
     const historyEl = document.getElementById('history');
 
-    // 모든 버튼에 진동 피드백 추가
-    document.addEventListener('DOMContentLoaded', () => {
-      const buttons = document.querySelectorAll('.btn');
-      buttons.forEach(button => {
-        button.addEventListener('touchstart', (e) => {
-          vibrate(5); // 짧은 진동 (10ms)
-        }, { passive: true });
-      });
-    });
-
     // Service Worker 등록
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -155,7 +145,7 @@
           .catch(err => console.log('❌ Service Worker 등록 실패:', err));
       });
     }
-    
+
     // 안드로이드 크롬 주소창 숨기기 (개선된 버전)
     function hideAddressBar() {
       // 스크롤을 조금만 해도 주소창이 숨겨짐
@@ -178,7 +168,7 @@
       }
     });
 
-    // 계산기 로직 (진동 피드백 제거 - 중복 방지)
+    // 계산기 로직
     function appendToDisplay(value) {
       if (display.innerText === '0' && value !== '.') {
         display.innerText = '';
@@ -243,6 +233,7 @@
   </script>
 </body>
 </html>
+
 
 
 
