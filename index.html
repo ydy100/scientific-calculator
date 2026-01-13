@@ -49,11 +49,18 @@
       font-family: 'Inter', system-ui, sans-serif;
       user-select: none;
       background-color: #020617;
+      /* 모바일에서 주소창 최소화 */
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
 
     #calculator-container {
       width: 100vw;
       height: 100vh;
+      height: 100dvh; /* 동적 뷰포트 높이 */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -129,6 +136,23 @@
     const display = document.getElementById('display');
     const historyEl = document.getElementById('history');
 
+    // 햅틱 피드백 함수
+    function vibrate(duration = 10) {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(duration);
+      }
+    }
+
+    // 모든 버튼에 진동 피드백 추가
+    document.addEventListener('DOMContentLoaded', () => {
+      const buttons = document.querySelectorAll('.btn');
+      buttons.forEach(button => {
+        button.addEventListener('touchstart', (e) => {
+          vibrate(10); // 짧은 진동 (10ms)
+        }, { passive: true });
+      });
+    });
+
     // Service Worker 등록
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -138,19 +162,31 @@
       });
     }
 
-    // 안드로이드 크롬 주소창 숨기기
+    // 안드로이드 크롬 주소창 숨기기 (개선된 버전)
     function hideAddressBar() {
-      if (window.scrollY === 0) {
+      // 스크롤을 조금만 해도 주소창이 숨겨짐
+      setTimeout(() => {
         window.scrollTo(0, 1);
-      }
+        setTimeout(() => window.scrollTo(0, 0), 10);
+      }, 100);
     }
 
     window.addEventListener('load', hideAddressBar);
-    window.addEventListener('orientationchange', () => setTimeout(hideAddressBar, 500));
-    document.addEventListener('touchstart', hideAddressBar, { once: true });
+    window.addEventListener('resize', hideAddressBar);
+    window.addEventListener('orientationchange', () => setTimeout(hideAddressBar, 300));
+    
+    // 사용자가 화면을 터치할 때마다 주소창 숨기기 시도
+    let touchCount = 0;
+    document.addEventListener('touchstart', () => {
+      if (touchCount < 3) {
+        hideAddressBar();
+        touchCount++;
+      }
+    });
 
-    // 계산기 로직
+    // 계산기 로직 (진동 피드백 추가)
     function appendToDisplay(value) {
+      vibrate(10);
       if (display.innerText === '0' && value !== '.') {
         display.innerText = '';
       }
@@ -160,15 +196,18 @@
     }
 
     function clearAll() {
+      vibrate(15); // 조금 더 긴 진동
       display.innerText = '0';
       historyEl.innerText = '';
     }
 
     function backspace() {
+      vibrate(10);
       display.innerText = display.innerText.slice(0, -1) || '0';
     }
 
     function calculate() {
+      vibrate(20); // = 버튼은 더 강한 진동
       let expr = display.innerText
         .replace(/×/g, '*')
         .replace(/−/g, '-')
@@ -188,6 +227,7 @@
         display.innerText = Number.isInteger(result) ? result : parseFloat(result.toFixed(12));
       } catch (e) {
         display.innerText = 'Error';
+        vibrate([50, 100, 50]); // 에러 시 패턴 진동 (진동-멈춤-진동)
         setTimeout(() => {
           display.innerText = '0';
           historyEl.innerText = '';
@@ -197,6 +237,7 @@
 
     document.addEventListener('keydown', (e) => {
       e.preventDefault();
+      vibrate(8); // 키보드 입력 시 가벼운 진동
       const key = e.key;
       if (/[0-9]/.test(key)) appendToDisplay(key);
       else if (key === '.') appendToDisplay('.');
