@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  
+  <!-- PWA 설정 -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="계산기">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#020617">
+  <title>공학용 계산기</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            calc: {
+              bg: '#1e293b',
+              screen: '#0f172a',
+              btn: {
+                num: '#334155',
+                func: '#475569',
+                op: '#64748b',
+                equal: '#3b82f6',
+                clear: '#ef4444',
+              }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+      user-select: none;
+      background-color: #020617;
+      /* 모바일에서 주소창 최소화 */
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    #calculator-container {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh; /* 동적 뷰포트 높이 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right)
+                 env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    .btn {
+      transition: all 0.15s ease;
+      border-radius: 0.5rem;
+    }
+    .btn:hover { opacity: 0.95; }
+    .btn:active { transform: scale(0.97); }
+
+    #display, #history {
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    #display::-webkit-scrollbar, #history::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="calculator-container">
+    <div class="w-full max-w-md mx-4 rounded-2xl border-2 border-cyan-500 bg-gray-800 p-5 shadow-2xl">
+      <!-- Display -->
+      <div class="mb-5 p-4 rounded-xl bg-calc-screen text-right text-white shadow-inner">
+        <div id="history" class="text-gray-400 text-sm h-6 whitespace-nowrap"></div>
+        <div id="display" class="text-3xl md:text-4xl font-bold mt-1 h-12 whitespace-nowrap">0</div>
+      </div>
+
+      <!-- Keypad -->
+      <div class="grid grid-cols-5 gap-2.5">
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('sin(')">sin</button>
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('cos(')">cos</button>
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('tan(')">tan</button>
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('log(')">log</button>
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('ln(')">ln</button>
+
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('(')">(</button>
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay(')')">)</button>
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('^')">x^y</button>
+        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('sqrt(')">√</button>
+        <button class="btn py-3 text-sm bg-calc-btn-clear text-white" onclick="clearAll()">C</button>
+
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('7')">7</button>
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('8')">8</button>
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('9')">9</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('/')">/</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="backspace()">⌫</button>
+
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('4')">4</button>
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('5')">5</button>
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('6')">6</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('*')">×</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('π')">π</button>
+
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('1')">1</button>
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('2')">2</button>
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('3')">3</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('-')">−</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('+')">+</button>
+
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white col-span-2" onclick="appendToDisplay('0')">0</button>
+        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('.')">.</button>
+        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('e')">e</button>
+        <button class="btn py-3 text-sm bg-calc-btn-equal text-white" onclick="calculate()">=</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const historyEl = document.getElementById('history');
+
+    // 햅틱 피드백 함수 (갤럭시 최적화)
+    function vibrate(duration = 50) {
+      try {
+        // 여러 방법으로 시도
+        if (navigator.vibrate) {
+          navigator.vibrate(duration);
+        } else if (navigator.webkitVibrate) {
+          navigator.webkitVibrate(duration);
+        } else if (navigator.mozVibrate) {
+          navigator.mozVibrate(duration);
+        } else if (window.navigator.vibrate) {
+          window.navigator.vibrate(duration);
+        }
+      } catch (e) {
+        console.log('진동 실패:', e);
+      }
+    }
+
+    // 모든 버튼에 직접 진동 피드백 추가
+    document.addEventListener('DOMContentLoaded', () => {
+      const buttons = document.querySelectorAll('.btn');
+      buttons.forEach(button => {
+        // touchstart와 click 둘 다 사용
+        button.addEventListener('touchstart', (e) => {
+          vibrate(50); // 50ms로 증가
+        }, { passive: true });
+        
+        // 마우스 클릭도 지원 (PC 테스트용)
+        button.addEventListener('mousedown', (e) => {
+          vibrate(50);
+        });
+      });
+      
+      // 테스트: 페이지 로드 시 진동
+      setTimeout(() => {
+        vibrate(200); // 로딩 완료 시 긴 진동
+      }, 1000);
+    });
+
+    // Service Worker 등록
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('✅ Service Worker 등록 성공:', reg.scope))
+          .catch(err => console.log('❌ Service Worker 등록 실패:', err));
+      });
+    }
+
+    // 안드로이드 크롬 주소창 숨기기 (개선된 버전)
+    function hideAddressBar() {
+      // 스크롤을 조금만 해도 주소창이 숨겨짐
+      setTimeout(() => {
+        window.scrollTo(0, 1);
+        setTimeout(() => window.scrollTo(0, 0), 10);
+      }, 100);
+    }
+
+    window.addEventListener('load', hideAddressBar);
+    window.addEventListener('resize', hideAddressBar);
+    window.addEventListener('orientationchange', () => setTimeout(hideAddressBar, 300));
+    
+    // 사용자가 화면을 터치할 때마다 주소창 숨기기 시도
+    let touchCount = 0;
+    document.addEventListener('touchstart', () => {
+      if (touchCount < 3) {
+        hideAddressBar();
+        touchCount++;
+      }
+    });
+
+    // 계산기 로직 (진동 피드백 제거 - 중복 방지)
+    function appendToDisplay(value) {
+      if (display.innerText === '0' && value !== '.') {
+        display.innerText = '';
+      }
+      if (value === 'π') value = Math.PI;
+      if (value === 'e') value = Math.E;
+      display.innerText += value;
+    }
+
+    function clearAll() {
+      display.innerText = '0';
+      historyEl.innerText = '';
+    }
+
+    function backspace() {
+      display.innerText = display.innerText.slice(0, -1) || '0';
+    }
+
+    function calculate() {
+      let expr = display.innerText
+        .replace(/×/g, '*')
+        .replace(/−/g, '-')
+        .replace(/π/g, Math.PI.toString())
+        .replace(/e/g, Math.E.toString())
+        .replace(/\^/g, '**')
+        .replace(/sqrt\(/g, 'Math.sqrt(')
+        .replace(/sin\(/g, 'Math.sin(')
+        .replace(/cos\(/g, 'Math.cos(')
+        .replace(/tan\(/g, 'Math.tan(')
+        .replace(/log\(/g, 'Math.log10(')
+        .replace(/ln\(/g, 'Math.log(');
+
+      try {
+        const result = Function('"use strict"; return (' + expr + ')')();
+        historyEl.innerText = display.innerText + ' =';
+        display.innerText = Number.isInteger(result) ? result : parseFloat(result.toFixed(12));
+      } catch (e) {
+        display.innerText = 'Error';
+        setTimeout(() => {
+          display.innerText = '0';
+          historyEl.innerText = '';
+        }, 1500);
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      e.preventDefault();
+      const key = e.key;
+      if (/[0-9]/.test(key)) appendToDisplay(key);
+      else if (key === '.') appendToDisplay('.');
+      else if (key === '+') appendToDisplay('+');
+      else if (key === '-') appendToDisplay('−');
+      else if (key === '*') appendToDisplay('×');
+      else if (key === '/') appendToDisplay('/');
+      else if (key === '(') appendToDisplay('(');
+      else if (key === ')') appendToDisplay(')');
+      else if (key === '^') appendToDisplay('^');
+      else if (key === 'Enter' || key === '=') calculate();
+      else if (key === 'Escape') clearAll();
+      else if (key === 'Backspace') backspace();
+    });
+  </script>
+</body>
+</html>
