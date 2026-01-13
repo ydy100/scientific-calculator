@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   
-  <!-- PWA 설정 -->
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,7 +15,6 @@
   <meta name="theme-color" content="#020617">
   <title>공학용 계산기</title>
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -68,11 +66,14 @@
     }
 
     .btn {
-      transition: all 0.15s ease;
+      transition: all 0.1s ease;
       border-radius: 0.5rem;
+      -webkit-tap-highlight-color: transparent; /* iOS 터치 하이라이트 제거 */
     }
-    .btn:hover { opacity: 0.95; }
-    .btn:active { transform: scale(0.97); }
+    .btn:active { 
+      transform: scale(0.92); /* 클릭 시 축소 효과 강화 */
+      filter: brightness(1.3);
+    }
 
     #display, #history {
       overflow-x: auto;
@@ -86,48 +87,46 @@
 <body>
   <div id="calculator-container">
     <div class="w-full max-w-md mx-4 rounded-2xl border-2 border-cyan-500 bg-gray-800 p-5 shadow-2xl">
-      <!-- Display -->
       <div class="mb-5 p-4 rounded-xl bg-calc-screen text-right text-white shadow-inner">
         <div id="history" class="text-gray-400 text-sm h-6 whitespace-nowrap"></div>
         <div id="display" class="text-3xl md:text-4xl font-bold mt-1 h-12 whitespace-nowrap">0</div>
       </div>
 
-      <!-- Keypad -->
       <div class="grid grid-cols-5 gap-2.5">
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('sin(')">sin</button>
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('cos(')">cos</button>
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('tan(')">tan</button>
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('log(')">log</button>
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('ln(')">ln</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput('sin(')">sin</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput('cos(')">cos</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput('tan(')">tan</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput('log(')">log</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput('ln(')">ln</button>
 
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('(')">(</button>
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay(')')">)</button>
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('^')">x^y</button>
-        <button class="btn py-3 text-sm bg-calc-btn-func text-white" onclick="appendToDisplay('sqrt(')">√</button>
-        <button class="btn py-3 text-sm bg-calc-btn-clear text-white" onclick="clearAll()">C</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput('(')">(</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput(')')">)</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput('^')">x^y</button>
+        <button class="btn py-4 text-sm bg-calc-btn-func text-white" onclick="handleInput('sqrt(')">√</button>
+        <button class="btn py-4 text-sm bg-calc-btn-clear text-white" onclick="handleClear()">C</button>
 
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('7')">7</button>
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('8')">8</button>
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('9')">9</button>
-        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('/')">/</button>
-        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="backspace()">⌫</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('7')">7</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('8')">8</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('9')">9</button>
+        <button class="btn py-4 text-sm bg-calc-btn-op text-white" onclick="handleInput('/')">/</button>
+        <button class="btn py-4 text-sm bg-calc-btn-op text-white" onclick="handleBackspace()">⌫</button>
 
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('4')">4</button>
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('5')">5</button>
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('6')">6</button>
-        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('*')">×</button>
-        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('π')">π</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('4')">4</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('5')">5</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('6')">6</button>
+        <button class="btn py-4 text-sm bg-calc-btn-op text-white" onclick="handleInput('*')">×</button>
+        <button class="btn py-4 text-sm bg-calc-btn-op text-white" onclick="handleInput('π')">π</button>
 
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('1')">1</button>
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('2')">2</button>
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('3')">3</button>
-        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('-')">−</button>
-        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('e')">e</button>     
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('1')">1</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('2')">2</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('3')">3</button>
+        <button class="btn py-4 text-sm bg-calc-btn-op text-white" onclick="handleInput('-')">−</button>
+        <button class="btn py-4 text-sm bg-calc-btn-op text-white" onclick="handleInput('e')">e</button>     
 
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white col-span-2" onclick="appendToDisplay('0')">0</button>
-        <button class="btn py-3 text-sm bg-calc-btn-num text-white" onclick="appendToDisplay('.')">.</button>
-        <button class="btn py-3 text-sm bg-calc-btn-op text-white" onclick="appendToDisplay('+')">+</button>        
-        <button class="btn py-3 text-sm bg-calc-btn-equal text-white" onclick="calculate()">=</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white col-span-2" onclick="handleInput('0')">0</button>
+        <button class="btn py-4 text-sm bg-calc-btn-num text-white" onclick="handleInput('.')">.</button>
+        <button class="btn py-4 text-sm bg-calc-btn-op text-white" onclick="handleInput('+')">+</button>        
+        <button class="btn py-4 text-sm bg-calc-btn-equal text-white" onclick="handleCalculate()">=</button>
       </div>
     </div>
   </div>
@@ -136,33 +135,44 @@
     const display = document.getElementById('display');
     const historyEl = document.getElementById('history');
 
-    // Service Worker 등록
+    // 햅틱 피드백 함수
+    function triggerHaptic() {
+      if ('vibrate' in navigator) {
+        // 안드로이드: 10ms의 짧은 진동
+        // iOS Safari: 정책상 진동이 무시될 수 있으나 표준 코드 포함
+        navigator.vibrate(10); 
+      }
+    }
+
+    // 입력 래퍼 함수 (햅틱 포함)
+    function handleInput(val) {
+      triggerHaptic();
+      appendToDisplay(val);
+    }
+
+    function handleClear() {
+      triggerHaptic();
+      clearAll();
+    }
+
+    function handleBackspace() {
+      triggerHaptic();
+      backspace();
+    }
+
+    function handleCalculate() {
+      triggerHaptic();
+      calculate();
+    }
+
+    // 서비스 워커 등록
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('✅ Service Worker 등록 성공:', reg.scope))
-          .catch(err => console.log('❌ Service Worker 등록 실패:', err));
+          .then(reg => console.log('✅ 등록 성공:', reg.scope))
+          .catch(err => console.log('❌ 등록 실패:', err));
       });
     }
-
-    function hideAddressBar() {
-      setTimeout(() => {
-        window.scrollTo(0, 1);
-        setTimeout(() => window.scrollTo(0, 0), 10);
-      }, 100);
-    }
-
-    window.addEventListener('load', hideAddressBar);
-    window.addEventListener('resize', hideAddressBar);
-    window.addEventListener('orientationchange', () => setTimeout(hideAddressBar, 300));
-
-    let touchCount = 0;
-    document.addEventListener('touchstart', () => {
-      if (touchCount < 3) {
-        hideAddressBar();
-        touchCount++;
-      }
-    });
 
     function appendToDisplay(value) {
       if (display.innerText === '0' && value !== '.') {
@@ -209,23 +219,22 @@
       }
     }
 
+    // 키보드 지원
     document.addEventListener('keydown', (e) => {
-      e.preventDefault();
       const key = e.key;
-      if (/[0-9]/.test(key)) appendToDisplay(key);
-      else if (key === '.') appendToDisplay('.');
-      else if (key === '+') appendToDisplay('+');
-      else if (key === '-') appendToDisplay('−');
-      else if (key === '*') appendToDisplay('×');
-      else if (key === '/') appendToDisplay('/');
-      else if (key === '(') appendToDisplay('(');
-      else if (key === ')') appendToDisplay(')');
-      else if (key === '^') appendToDisplay('^');
-      else if (key === 'Enter' || key === '=') calculate();
-      else if (key === 'Escape') clearAll();
-      else if (key === 'Backspace') backspace();
+      if (/[0-9]/.test(key)) handleInput(key);
+      else if (key === '.') handleInput('.');
+      else if (key === '+') handleInput('+');
+      else if (key === '-') handleInput('−');
+      else if (key === '*') handleInput('×');
+      else if (key === '/') handleInput('/');
+      else if (key === '(') handleInput('(');
+      else if (key === ')') handleInput(')');
+      else if (key === '^') handleInput('^');
+      else if (key === 'Enter' || key === '=') handleCalculate();
+      else if (key === 'Escape') handleClear();
+      else if (key === 'Backspace') handleBackspace();
     });
   </script>
 </body>
 </html>
-
