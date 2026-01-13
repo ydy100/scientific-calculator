@@ -49,7 +49,6 @@
       font-family: 'Inter', system-ui, sans-serif;
       user-select: none;
       background-color: #020617;
-      /* 모바일에서 주소창 최소화 */
       position: fixed;
       top: 0;
       left: 0;
@@ -60,7 +59,7 @@
     #calculator-container {
       width: 100vw;
       height: 100vh;
-      height: 100dvh; /* 동적 뷰포트 높이 */
+      height: 100dvh;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -146,9 +145,7 @@
       });
     }
 
-    // 안드로이드 크롬 주소창 숨기기 (개선된 버전)
     function hideAddressBar() {
-      // 스크롤을 조금만 해도 주소창이 숨겨짐
       setTimeout(() => {
         window.scrollTo(0, 1);
         setTimeout(() => window.scrollTo(0, 0), 10);
@@ -158,8 +155,7 @@
     window.addEventListener('load', hideAddressBar);
     window.addEventListener('resize', hideAddressBar);
     window.addEventListener('orientationchange', () => setTimeout(hideAddressBar, 300));
-    
-    // 사용자가 화면을 터치할 때마다 주소창 숨기기 시도
+
     let touchCount = 0;
     document.addEventListener('touchstart', () => {
       if (touchCount < 3) {
@@ -168,7 +164,6 @@
       }
     });
 
-    // 계산기 로직
     function appendToDisplay(value) {
       if (display.innerText === '0' && value !== '.') {
         display.innerText = '';
@@ -233,7 +228,3 @@
   </script>
 </body>
 </html>
-
-
-
-
